@@ -1,0 +1,138 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  MEMBER
+  EXTERNAL
+}
+
+enum MemberStatus {
+  ACTIVE
+  VACUUM
+  SP1
+  SP2
+  ALUMNI
+}
+
+enum Grade {
+  A
+  B
+  C
+  D
+  E
+}
+
+enum TaskFrequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum TaskStatus {
+  PENDING
+  REVIEW
+  COMPLETED
+  REJECTED
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String
+  role      Role
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  memberProfile   Member?
+  permissionsGiven Permission[] @relation("GrantedBy")
+  permissionsReceived Permission[] @relation("UserPermissions")
+  tasksVerified   Task[]       @relation("VerifiedBy")
+  disciplineInput BoardingRecord[] @relation("InputBy")
+  auditActor      AuditLog[]   @relation("AuditActor")
+
+  @@map("users")
+}
+
+model Member {
+  id           String       @id @default(uuid())
+  userId       String       @unique @map("user_id")
+  user         User         @relation(fields: [userId], references: [id])
+  fullName     String       @map("full_name")
+  division     String
+  status       MemberStatus @default(ACTIVE)
+  currentGrade Grade?       @map("current_grade")
+  dormId       String?      @map("dorm_id") // Placeholder for future relation
+  classId      String?      @map("class_id") // Placeholder for future relation
+  joinDate     DateTime     @map("join_date")
+
+  // Relations
+  tasks           Task[]
+  boardingRecords BoardingRecord[]
+
+  @@map("members")
+}
+
+model Permission {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  user          User     @relation("UserPermissions", fields: [userId], references: [id])
+  permissionKey String   @map("permission_key") // e.g., TASK_VERIFIER
+  grantedBy     String   @map("granted_by")
+  granter       User     @relation("GrantedBy", fields: [grantedBy], references: [id])
+  grantedAt     DateTime @default(now()) @map("granted_at")
+
+  @@map("permissions")
+}
+
+model Task {
+  id          String        @id @default(uuid())
+  memberId    String        @map("member_id")
+  member      Member        @relation(fields: [memberId], references: [id])
+  title       String
+  frequency   TaskFrequency
+  deadline    DateTime
+  status      TaskStatus    @default(PENDING)
+  constraints String
+  solutions   String
+  proofLink   String?       @map("proof_link")
+  verifiedBy  String?       @map("verified_by")
+  verifier    User?         @relation("VerifiedBy", fields: [verifiedBy], references: [id])
+  verifiedAt  DateTime?     @map("verified_at")
+
+  @@map("tasks")
+}
+
+model BoardingRecord {
+  id              String   @id @default(uuid())
+  memberId        String   @map("member_id")
+  member          Member   @relation(fields: [memberId], references: [id])
+  periodMonth     DateTime @map("period_month")
+  disciplineScore Int      @map("discipline_score")
+  liabilities     String?  // Added
+  achievements    String?  // Added
+  notes           String?  // Added
+  inputBy         String   @map("input_by")
+  inputter        User     @relation("InputBy", fields: [inputBy], references: [id])
+
+  @@map("boarding_records")
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  actorId     String   @map("actor_id")
+  actor       User     @relation("AuditActor", fields: [actorId], references: [id])
+  action      String
+  targetTable String   @map("target_table")
+  targetId    String   @map("target_id")
+  details     Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("audit_logs")
+}

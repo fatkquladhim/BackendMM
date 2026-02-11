@@ -1,0 +1,1360 @@
+﻿{
+    "info":  {
+                 "name":  "Multimedia Backend API - Full Endpoint Test",
+                 "_postman_id":  "9c72b0d4-74ab-42ea-9306-0db31f26e6f2",
+                 "description":  "Complete API test collection for backendMM. Covers auth, validation, RBAC, and end-to-end flow.",
+                 "schema":  "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+             },
+    "variable":  [
+                     {
+                         "key":  "baseUrl",
+                         "value":  "http://localhost:3000"
+                     },
+                     {
+                         "key":  "adminUsername",
+                         "value":  "admin"
+                     },
+                     {
+                         "key":  "adminPassword",
+                         "value":  "password"
+                     },
+                     {
+                         "key":  "memberUsername",
+                         "value":  "member"
+                     },
+                     {
+                         "key":  "memberPassword",
+                         "value":  "password"
+                     },
+                     {
+                         "key":  "externalUsername",
+                         "value":  "external"
+                     },
+                     {
+                         "key":  "externalPassword",
+                         "value":  "password"
+                     },
+                     {
+                         "key":  "nowIso",
+                         "value":  "2026-02-11T08:00:00.000Z"
+                     },
+                     {
+                         "key":  "nextMonthStart",
+                         "value":  "2026-03-01"
+                     }
+                 ],
+    "item":  [
+                 {
+                     "name":  "00 Health Check",
+                     "item":  [
+                                  {
+                                      "name":  "GET /",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               ""
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status is 200\u0027, function () { pm.response.to.have.status(200); });",
+                                                                                    "const json = pm.response.json();",
+                                                                                    "pm.test(\u0027Has health payload\u0027, function () {",
+                                                                                    "  pm.expect(json).to.have.property(\u0027status\u0027);",
+                                                                                    "  pm.expect(json).to.have.property(\u0027message\u0027);",
+                                                                                    "});"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "01 Auth",
+                     "item":  [
+                                  {
+                                      "name":  "POST /api/auth/register - invalid payload",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"username\": \"ab\",\n  \"password\": \"123\",\n  \"role\": \"INVALID_ROLE\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/auth/register",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "auth",
+                                                                               "register"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status is 400\u0027, function () { pm.response.to.have.status(400); });",
+                                                                                    "const json = pm.response.json();",
+                                                                                    "pm.test(\u0027Validation error response\u0027, function () { pm.expect(json.error).to.eql(\u0027Validation Error\u0027); });"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "POST /api/auth/register - duplicate username",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"username\": \"admin\",\n  \"password\": \"password\",\n  \"role\": \"ADMIN\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/auth/register",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "auth",
+                                                                               "register"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status is 400\u0027, function () { pm.response.to.have.status(400); });",
+                                                                                    "const json = pm.response.json();",
+                                                                                    "pm.test(\u0027Duplicate username message\u0027, function () { pm.expect(json.error).to.eql(\u0027Username already taken\u0027); });"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "POST /api/auth/register - create target user",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"username\": \"target_user_{{$timestamp}}\",\n  \"password\": \"password\",\n  \"role\": \"EXTERNAL\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/auth/register",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "auth",
+                                                                               "register"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status is 201\u0027, function () { pm.response.to.have.status(201); });",
+                                                                                    "const json = pm.response.json();",
+                                                                                    "pm.environment.set(\u0027targetUserId\u0027, json.userId);",
+                                                                                    "pm.test(\u0027Stores targetUserId\u0027, function () { pm.expect(pm.environment.get(\u0027targetUserId\u0027)).to.be.a(\u0027string\u0027); });"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "POST /api/auth/login - invalid credentials",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"username\": \"admin\",\n  \"password\": \"wrong-password\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/auth/login",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "auth",
+                                                                               "login"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status is 401\u0027, function () { pm.response.to.have.status(401); });",
+                                                                                    "const json = pm.response.json();",
+                                                                                    "pm.test(\u0027Invalid credentials message\u0027, function () { pm.expect(json.error).to.eql(\u0027Invalid credentials\u0027); });"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "POST /api/auth/login - admin",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"username\": \"{{adminUsername}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/auth/login",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "auth",
+                                                                               "login"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status is 200\u0027, function () { pm.response.to.have.status(200); });",
+                                                                                    "const json = pm.response.json();",
+                                                                                    "pm.environment.set(\u0027adminToken\u0027, json.accessToken);",
+                                                                                    "pm.test(\u0027Admin token saved\u0027, function () { pm.expect(pm.environment.get(\u0027adminToken\u0027)).to.be.a(\u0027string\u0027); });"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "POST /api/auth/login - member",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"username\": \"{{memberUsername}}\",\n  \"password\": \"{{memberPassword}}\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/auth/login",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "auth",
+                                                                               "login"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status is 200\u0027, function () { pm.response.to.have.status(200); });",
+                                                                                    "const json = pm.response.json();",
+                                                                                    "pm.environment.set(\u0027memberToken\u0027, json.accessToken);",
+                                                                                    "const token = json.accessToken;",
+                                                                                    "const payload = JSON.parse(require(\u0027atob\u0027)(token.split(\u0027.\u0027)[1]));",
+                                                                                    "pm.environment.set(\u0027memberUserId\u0027, payload.id);",
+                                                                                    "pm.test(\u0027Member token and user id saved\u0027, function () {",
+                                                                                    "  pm.expect(pm.environment.get(\u0027memberToken\u0027)).to.be.a(\u0027string\u0027);",
+                                                                                    "  pm.expect(pm.environment.get(\u0027memberUserId\u0027)).to.be.a(\u0027string\u0027);",
+                                                                                    "});"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "POST /api/auth/login - external",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"username\": \"{{externalUsername}}\",\n  \"password\": \"{{externalPassword}}\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/auth/login",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "auth",
+                                                                               "login"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status is 200\u0027, function () { pm.response.to.have.status(200); });",
+                                                                                    "const json = pm.response.json();",
+                                                                                    "pm.environment.set(\u0027externalToken\u0027, json.accessToken);",
+                                                                                    "pm.test(\u0027External token saved\u0027, function () { pm.expect(pm.environment.get(\u0027externalToken\u0027)).to.be.a(\u0027string\u0027); });"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "02 Tasks",
+                     "item":  [
+                                  {
+                                      "name":  "POST /api/tasks - no token",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"title\": \"Build weekly video summary\",\n  \"frequency\": \"WEEKLY\",\n  \"deadline\": \"{{nowIso}}\",\n  \"constraints\": \"Max 5 minutes\",\n  \"solutions\": \"Use template A\",\n  \"proofLink\": \"https://example.com/proof\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/tasks",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "tasks"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status is 401\u0027, function () { pm.response.to.have.status(401); });"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "POST /api/tasks - validation error",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{memberToken}}"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"title\": \"abc\",\n  \"frequency\": \"YEARLY\",\n  \"deadline\": \"invalid-date\",\n  \"constraints\": \"x\",\n  \"solutions\": \"y\",\n  \"proofLink\": \"not-a-url\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/tasks",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "tasks"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status is 400\u0027, function () { pm.response.to.have.status(400); });"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "POST /api/tasks - create task as member",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{memberToken}}"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"title\": \"Build weekly video summary\",\n  \"frequency\": \"WEEKLY\",\n  \"deadline\": \"{{nowIso}}\",\n  \"constraints\": \"Max 5 minutes\",\n  \"solutions\": \"Use template A\",\n  \"proofLink\": \"https://example.com/proof\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/tasks",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "tasks"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status is 201\u0027, function () { pm.response.to.have.status(201); });",
+                                                                                    "const json = pm.response.json();",
+                                                                                    "pm.environment.set(\u0027taskId\u0027, json.id);",
+                                                                                    "pm.environment.set(\u0027memberId\u0027, json.memberId);",
+                                                                                    "pm.test(\u0027Task id and memberId saved\u0027, function () {",
+                                                                                    "  pm.expect(pm.environment.get(\u0027taskId\u0027)).to.be.a(\u0027string\u0027);",
+                                                                                    "  pm.expect(pm.environment.get(\u0027memberId\u0027)).to.be.a(\u0027string\u0027);",
+                                                                                    "});"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "GET /api/tasks - member own tasks",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{memberToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/tasks",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "tasks"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status is 200\u0027, function () { pm.response.to.have.status(200); });",
+                                                                                    "const rows = pm.response.json();",
+                                                                                    "pm.test(\u0027Array response\u0027, function () { pm.expect(Array.isArray(rows)).to.eql(true); });",
+                                                                                    "const memberId = pm.environment.get(\u0027memberId\u0027);",
+                                                                                    "pm.test(\u0027All tasks belong to member\u0027, function () {",
+                                                                                    "  rows.forEach((r) =\u003e pm.expect(r.memberId).to.eql(memberId));",
+                                                                                    "});"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "GET /api/tasks - invalid token",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer invalid.token.value"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/tasks",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "tasks"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status is 403\u0027, function () { pm.response.to.have.status(403); });"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "PATCH /api/tasks/:id/verify - forbidden for external",
+                                      "request":  {
+                                                      "method":  "PATCH",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{externalToken}}"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"action\": \"APPROVE\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/tasks/{{taskId}}/verify",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "tasks",
+                                                                               "{{taskId}}",
+                                                                               "verify"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status is 403\u0027, function () { pm.response.to.have.status(403); });"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "PATCH /api/tasks/:id/verify - task not found",
+                                      "request":  {
+                                                      "method":  "PATCH",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{adminToken}}"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"action\": \"REJECT\",\n  \"notes\": \"Not enough evidence\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/tasks/00000000-0000-0000-0000-000000000000/verify",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "tasks",
+                                                                               "00000000-0000-0000-0000-000000000000",
+                                                                               "verify"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status is 404\u0027, function () { pm.response.to.have.status(404); });"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "PATCH /api/tasks/:id/verify - approve by admin",
+                                      "request":  {
+                                                      "method":  "PATCH",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{adminToken}}"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"action\": \"APPROVE\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/tasks/{{taskId}}/verify",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "tasks",
+                                                                               "{{taskId}}",
+                                                                               "verify"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status is 200\u0027, function () { pm.response.to.have.status(200); });",
+                                                                                    "const json = pm.response.json();",
+                                                                                    "pm.test(\u0027Task completed\u0027, function () { pm.expect(json.task.status).to.eql(\u0027COMPLETED\u0027); });"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "GET /api/tasks?status=COMPLETED - admin",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{adminToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/tasks?status=COMPLETED",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "tasks"
+                                                                           ],
+                                                                  "query":  [
+                                                                                {
+                                                                                    "key":  "status",
+                                                                                    "value":  "COMPLETED"
+                                                                                }
+                                                                            ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status is 200\u0027, function () { pm.response.to.have.status(200); });"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "03 Users Permission",
+                     "item":  [
+                                  {
+                                      "name":  "POST /api/users/grant-permission - no token",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"targetUserId\": \"{{targetUserId}}\",\n  \"permissionKey\": \"TASK_VERIFIER\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/users/grant-permission",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "users",
+                                                                               "grant-permission"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status is 401\u0027, function () { pm.response.to.have.status(401); });"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "POST /api/users/grant-permission - non admin forbidden",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{memberToken}}"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"targetUserId\": \"{{targetUserId}}\",\n  \"permissionKey\": \"TASK_VERIFIER\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/users/grant-permission",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "users",
+                                                                               "grant-permission"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status is 403\u0027, function () { pm.response.to.have.status(403); });"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "POST /api/users/grant-permission - target not found",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{adminToken}}"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"targetUserId\": \"00000000-0000-0000-0000-000000000000\",\n  \"permissionKey\": \"TASK_VERIFIER\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/users/grant-permission",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "users",
+                                                                               "grant-permission"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status is 404\u0027, function () { pm.response.to.have.status(404); });"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "04 Boarding",
+                     "item":  [
+                                  {
+                                      "name":  "POST /api/boarding - no token",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"memberId\": \"{{memberId}}\",\n  \"periodMonth\": \"{{nextMonthStart}}\",\n  \"disciplineScore\": 90\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/boarding",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "boarding"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status is 401\u0027, function () { pm.response.to.have.status(401); });"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "POST /api/boarding - validation error",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{adminToken}}"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"memberId\": \"not-uuid\",\n  \"periodMonth\": \"2026-03-15\",\n  \"disciplineScore\": 999\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/boarding",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "boarding"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status is 400\u0027, function () { pm.response.to.have.status(400); });"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "POST /api/auth/register - temp member (no permission)",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"username\": \"member_no_perm_{{$timestamp}}\",\n  \"password\": \"password\",\n  \"role\": \"MEMBER\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/auth/register",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "auth",
+                                                                               "register"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status is 201\u0027, function () { pm.response.to.have.status(201); });",
+                                                                                    "const json = pm.response.json();",
+                                                                                    "pm.environment.set(\u0027tempNoPermMemberUserId\u0027, json.userId);"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    },
+                                                    {
+                                                        "listen":  "prerequest",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "const uname = \u0027member_no_perm_\u0027 + Date.now();",
+                                                                                    "pm.environment.set(\u0027tempNoPermMemberUsername\u0027, uname);",
+                                                                                    "const raw = JSON.stringify({ username: uname, password: \u0027password\u0027, role: \u0027MEMBER\u0027 }, null, 2);",
+                                                                                    "pm.request.body.update(raw);"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "POST /api/auth/login - temp member (no permission)",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"username\": \"{{tempNoPermMemberUsername}}\",\n  \"password\": \"password\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/auth/login",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "auth",
+                                                                               "login"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status is 200\u0027, function () { pm.response.to.have.status(200); });",
+                                                                                    "const json = pm.response.json();",
+                                                                                    "pm.environment.set(\u0027tempNoPermMemberToken\u0027, json.accessToken);"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "POST /api/boarding - member without DISCIPLINE_OFFICER (403)",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{tempNoPermMemberToken}}"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"memberId\": \"{{memberId}}\",\n  \"periodMonth\": \"2026-05-01\",\n  \"disciplineScore\": 80\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/boarding",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "boarding"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status is 403\u0027, function () { pm.response.to.have.status(403); });",
+                                                                                    "const json = pm.response.json();",
+                                                                                    "pm.test(\u0027Requires DISCIPLINE_OFFICER privilege\u0027, function () {",
+                                                                                    "  pm.expect(json).to.have.property(\u0027error\u0027);",
+                                                                                    "  pm.expect(json.error).to.include(\u0027DISCIPLINE_OFFICER\u0027);",
+                                                                                    "});"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "POST /api/users/grant-permission - grant DISCIPLINE_OFFICER to member",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{adminToken}}"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"targetUserId\": \"{{memberUserId}}\",\n  \"permissionKey\": \"DISCIPLINE_OFFICER\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/users/grant-permission",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "users",
+                                                                               "grant-permission"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status is 201\u0027, function () { pm.response.to.have.status(201); });",
+                                                                                    "const json = pm.response.json();",
+                                                                                    "pm.test(\u0027Permission granted payload\u0027, function () {",
+                                                                                    "  pm.expect(json).to.have.property(\u0027permission\u0027);",
+                                                                                    "  pm.expect(json.permission.permissionKey).to.eql(\u0027DISCIPLINE_OFFICER\u0027);",
+                                                                                    "});"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "POST /api/boarding - success by member with DISCIPLINE_OFFICER",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{memberToken}}"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"memberId\": \"{{memberId}}\",\n  \"periodMonth\": \"2026-04-01\",\n  \"disciplineScore\": 85\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/boarding",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "boarding"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status is 201\u0027, function () { pm.response.to.have.status(201); });"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "POST /api/boarding - success by admin",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{adminToken}}"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"memberId\": \"{{memberId}}\",\n  \"periodMonth\": \"2026-03-01\",\n  \"disciplineScore\": 90,\n  \"liabilities\": \"None\",\n  \"achievements\": \"Helped multimedia event\",\n  \"notes\": \"Consistent performance\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/boarding",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "boarding"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status is 201\u0027, function () { pm.response.to.have.status(201); });",
+                                                                                    "const json = pm.response.json();",
+                                                                                    "pm.test(\u0027Boarding record exists\u0027, function () { pm.expect(json).to.have.property(\u0027record\u0027); });"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "GET /api/boarding - member only own records",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{memberToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/boarding?memberId=00000000-0000-0000-0000-000000000000",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "boarding"
+                                                                           ],
+                                                                  "query":  [
+                                                                                {
+                                                                                    "key":  "memberId",
+                                                                                    "value":  "00000000-0000-0000-0000-000000000000"
+                                                                                }
+                                                                            ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status is 200\u0027, function () { pm.response.to.have.status(200); });",
+                                                                                    "const rows = pm.response.json();",
+                                                                                    "pm.test(\u0027Array response\u0027, function () { pm.expect(Array.isArray(rows)).to.eql(true); });",
+                                                                                    "const memberId = pm.environment.get(\u0027memberId\u0027);",
+                                                                                    "pm.test(\u0027All records belong to member\u0027, function () {",
+                                                                                    "  rows.forEach((r) =\u003e pm.expect(r.memberId).to.eql(memberId));",
+                                                                                    "});"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "GET /api/boarding - admin filter by member and month",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{adminToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/boarding?memberId={{memberId}}\u0026month=2026-03-01",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "boarding"
+                                                                           ],
+                                                                  "query":  [
+                                                                                {
+                                                                                    "key":  "memberId",
+                                                                                    "value":  "{{memberId}}"
+                                                                                },
+                                                                                {
+                                                                                    "key":  "month",
+                                                                                    "value":  "2026-03-01"
+                                                                                }
+                                                                            ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status is 200\u0027, function () { pm.response.to.have.status(200); });"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "99 Teardown",
+                     "item":  [
+                                  {
+                                      "name":  "POST /api/auth/logout",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/auth/logout",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "auth",
+                                                                               "logout"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status is 200\u0027, function () { pm.response.to.have.status(200); });",
+                                                                                    "const json = pm.response.json();",
+                                                                                    "pm.test(\u0027Logout response\u0027, function () { pm.expect(json.message).to.eql(\u0027Logged out successfully\u0027); });"
+                                                                                ],
+                                                                       "type":  "text/javascript"
+                                                                   }
+                                                    }
+                                                ]
+                                  }
+                              ]
+                 }
+             ]
+}

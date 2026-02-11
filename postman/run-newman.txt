@@ -1,0 +1,1 @@
+﻿newman run postman/backendMM.full.postman_collection.json -e postman/backendMM.local.postman_environment.json --reporters cli,htmlextra --reporter-htmlextra-export postman/newman-report.html
